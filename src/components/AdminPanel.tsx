@@ -533,7 +533,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="flex flex-col sm:flex-row gap-2">
                     <div className="flex-1 flex gap-2">
                       <input
-                        type="url"
+                        type="text"
                         value={avatarUrl}
                         onChange={(e) => setAvatarUrl(e.target.value)}
                         placeholder="https://exemplo.com/sua-foto.jpg"
@@ -723,7 +723,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL Direta do Áudio (Link MP3)</label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
-                      type="url"
+                      type="text"
                       value={songUrl}
                       onChange={(e) => setSongUrl(e.target.value)}
                       placeholder="https://exemplo.com/musica.mp3"
@@ -768,7 +768,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL da Capa do Álbum (Foto da Música)</label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
-                      type="url"
+                      type="text"
                       value={albumCoverUrl}
                       onChange={(e) => setAlbumCoverUrl(e.target.value)}
                       placeholder="https://images.unsplash.com/photo-... ou URL de imagem direta"
