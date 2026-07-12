@@ -5,7 +5,7 @@
   "avatarUrl": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/413afa7fb9cff73e9fd3a0f3b3ddb3ea~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=958f01f1&x-expires=1783994400&x-signature=s%2BeGlD33%2BiDUnt4eajiqu9EaA7A%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my2",
   "backgroundType": "interactive_rain",
   "backgroundUrl": "",
-  "viewsCount": 0,
+  "viewsCount": 2,
   "titleGlowColor": "white",
   "discord": {
     "username": "@gui27k",
@@ -39,5 +39,5 @@
     "backgroundUrl": ""
   },
   "footerText": "made by gui27k",
-  "adminPassword": "admin"
+  "adminPassword": "@Araujo9000"
 }

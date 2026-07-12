@@ -82,7 +82,7 @@ const DEFAULT_CONFIG = {
     backgroundUrl: "",
   },
   footerText: "",
-  adminPassword: "admin", // Default password, can be changed in panel
+  adminPassword: "@Araujo9000", // Default password, can be changed in panel
 };
 
 // Helper to get or create config

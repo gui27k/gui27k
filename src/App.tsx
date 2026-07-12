@@ -185,19 +185,6 @@ export default function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#060608] text-white select-none">
       
-      {/* Floating Subtle Settings Access Gear */}
-      <button
-        onClick={() => setIsAdminOpen(true)}
-        id="open-admin-btn"
-        className="fixed top-4 left-4 z-40 p-2.5 rounded-full bg-black/40 border border-white/5 text-white/30 hover:text-white/80 hover:bg-black/60 active:scale-95 transition-all duration-200 cursor-pointer flex items-center gap-1.5 backdrop-blur-md group"
-        title="Acessar Configurações"
-      >
-        <Settings className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
-        <span className="text-[10px] uppercase tracking-wider font-semibold font-mono opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[100px] transition-all duration-300 overflow-hidden">
-          admin
-        </span>
-      </button>
-
       {/* Background Layer rendering depending on configured selection */}
       <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
         {/* Ambient Dark Radial Overlay always active to ensure typography contrast */}
