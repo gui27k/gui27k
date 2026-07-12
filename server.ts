@@ -9,7 +9,8 @@ const PORT = 3000;
 const CONFIG_FILE = path.join(process.cwd(), "bio_config.json");
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Create uploads directory if it does not exist
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
@@ -35,7 +36,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 30 * 1024 * 1024, // 30MB limit
+    fileSize: 200 * 1024 * 1024, // 200MB limit
   },
 });
 
@@ -126,28 +127,38 @@ function saveConfig(config: any) {
 // API Routes
 
 // File upload route (requires authentication token)
-app.post("/api/upload", upload.single("file"), (req: any, res: any) => {
-  const token = req.body.token || req.query.token || req.headers.authorization?.replace("Bearer ", "");
-  const config = getConfig();
-  const expectedToken = "fakecrime-session-token-" + config.adminPassword;
-  
-  if (token !== expectedToken) {
-    if (req.file) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (err) {
-        console.error("Error deleting unauthorized file:", err);
+app.post("/api/upload", (req: any, res: any) => {
+  upload.single("file")(req, res, (err: any) => {
+    if (err) {
+      console.error("Error during upload:", err);
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ success: false, message: `Erro de upload: ${err.message} (Limite: 200MB)` });
       }
+      return res.status(500).json({ success: false, message: `Erro no servidor durante upload: ${err.message || err}` });
     }
-    return res.status(403).json({ success: false, message: "Sessão expirada ou não autorizada para upload!" });
-  }
 
-  if (!req.file) {
-    return res.status(400).json({ success: false, message: "Nenhum arquivo enviado!" });
-  }
+    const token = req.body.token || req.query.token || req.headers.authorization?.replace("Bearer ", "");
+    const config = getConfig();
+    const expectedToken = "fakecrime-session-token-" + config.adminPassword;
+    
+    if (token !== expectedToken) {
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkErr) {
+          console.error("Error deleting unauthorized file:", unlinkErr);
+        }
+      }
+      return res.status(403).json({ success: false, message: "Sessão expirada ou não autorizada para upload!" });
+    }
 
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({ success: true, url: fileUrl, originalName: req.file.originalname });
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Nenhum arquivo enviado!" });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.json({ success: true, url: fileUrl, originalName: req.file.originalname });
+  });
 });
 
 // Get public configuration and increment view count
