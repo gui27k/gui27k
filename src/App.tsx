@@ -145,6 +145,13 @@ export default function App() {
     footerText: "Made by fakecrime",
   };
 
+  // Update browser tab/window title dynamically
+  useEffect(() => {
+    if (activeConfig && activeConfig.title) {
+      document.title = activeConfig.title;
+    }
+  }, [activeConfig.title]);
+
   // Glow class selector
   const getGlowClass = (color: string) => {
     switch (color) {
