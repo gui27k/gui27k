@@ -79,6 +79,15 @@ export default function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
+  // Update browser tab/window title dynamically
+  useEffect(() => {
+    if (config && config.title) {
+      document.title = config.title;
+    } else {
+      document.title = "gui27k";
+    }
+  }, [config]);
+
   const handleEnterClick = () => {
     setHasEntered(true);
     setShouldPlayMusic(true);
@@ -144,13 +153,6 @@ export default function App() {
     },
     footerText: "Made by fakecrime",
   };
-
-  // Update browser tab/window title dynamically
-  useEffect(() => {
-    if (activeConfig && activeConfig.title) {
-      document.title = activeConfig.title;
-    }
-  }, [activeConfig.title]);
 
   // Glow class selector
   const getGlowClass = (color: string) => {
