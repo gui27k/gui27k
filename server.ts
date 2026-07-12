@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import multer from "multer";
 import { createServer as createViteServer } from "vite";
 
 const app = express();
@@ -9,6 +10,34 @@ const CONFIG_FILE = path.join(process.cwd(), "bio_config.json");
 
 // Middleware
 app.use(express.json());
+
+// Create uploads directory if it does not exist
+const UPLOADS_DIR = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(UPLOADS_DIR));
+
+// Setup multer storage for direct file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOADS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 30 * 1024 * 1024, // 30MB limit
+  },
+});
 
 // Default configuration mimicking fakecrime bio aesthetic
 const DEFAULT_CONFIG = {
@@ -95,6 +124,31 @@ function saveConfig(config: any) {
 }
 
 // API Routes
+
+// File upload route (requires authentication token)
+app.post("/api/upload", upload.single("file"), (req: any, res: any) => {
+  const token = req.body.token || req.query.token || req.headers.authorization?.replace("Bearer ", "");
+  const config = getConfig();
+  const expectedToken = "fakecrime-session-token-" + config.adminPassword;
+  
+  if (token !== expectedToken) {
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (err) {
+        console.error("Error deleting unauthorized file:", err);
+      }
+    }
+    return res.status(403).json({ success: false, message: "Sessão expirada ou não autorizada para upload!" });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: "Nenhum arquivo enviado!" });
+  }
+
+  const fileUrl = `/uploads/${req.file.filename}`;
+  res.json({ success: true, url: fileUrl, originalName: req.file.originalname });
+});
 
 // Get public configuration and increment view count
 app.get("/api/config", (req, res) => {

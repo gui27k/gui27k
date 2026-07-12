@@ -1,9 +1,83 @@
 import React, { useState, useEffect } from "react";
 import { 
   Settings, Save, LogOut, Lock, User, Image, Music, Hash, 
-  MessageSquare, Share2, Shield, Eye, RefreshCw, AlertCircle, CheckCircle2 
+  MessageSquare, Share2, Shield, Eye, RefreshCw, AlertCircle, CheckCircle2, Upload
 } from "lucide-react";
 import { BioConfig } from "../types";
+
+interface FileUploaderProps {
+  onUploadSuccess: (url: string) => void;
+  sessionToken: string;
+  accept: string;
+  label: string;
+}
+
+const FileUploader: React.FC<FileUploaderProps> = ({
+  onUploadSuccess,
+  sessionToken,
+  accept,
+  label,
+}) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    setIsUploading(true);
+    setError("");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("token", sessionToken);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        onUploadSuccess(data.url);
+      } else {
+        setError(data.message || "Erro ao enviar.");
+      }
+    } catch (err) {
+      setError("Erro de conexão ao enviar.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="relative flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-purple-600/20 hover:bg-purple-600/35 border border-purple-500/30 hover:border-purple-500/50 rounded-xl text-purple-300 text-xs font-semibold cursor-pointer transition-all active:scale-95 text-center shrink-0">
+        {isUploading ? (
+          <>
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <span>Enviando...</span>
+          </>
+        ) : (
+          <>
+            <Upload className="w-3.5 h-3.5" />
+            <span>{label}</span>
+          </>
+        )}
+        <input
+          type="file"
+          accept={accept}
+          onChange={handleFileChange}
+          className="hidden"
+          disabled={isUploading}
+        />
+      </label>
+      {error && <span className="text-[10px] text-red-400 mt-0.5">{error}</span>}
+    </div>
+  );
+};
 
 interface AdminPanelProps {
   currentConfig: BioConfig;
@@ -456,20 +530,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 <div className="flex flex-col gap-1.5 text-left md:col-span-2">
                   <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL da Foto de Perfil (Avatar)</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://exemplo.com/sua-foto.jpg"
-                      className="flex-1 px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
-                      required
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        type="url"
+                        value={avatarUrl}
+                        onChange={(e) => setAvatarUrl(e.target.value)}
+                        placeholder="https://exemplo.com/sua-foto.jpg"
+                        className="flex-1 px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
+                        required
+                      />
+                      {avatarUrl && (
+                        <img src={avatarUrl} alt="Preview Avatar" className="w-10 h-10 rounded-full border border-white/15 object-cover shrink-0" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                      )}
+                    </div>
+                    <FileUploader
+                      onUploadSuccess={setAvatarUrl}
+                      sessionToken={sessionToken}
+                      accept="image/*"
+                      label="Upload Foto"
                     />
-                    {avatarUrl && (
-                      <img src={avatarUrl} alt="Preview Avatar" className="w-10 h-10 rounded-full border border-white/15 object-cover shrink-0" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
-                    )}
                   </div>
-                  <span className="text-[10px] text-white/30">Insira um link direto de imagem (do Discord, Unsplash, Imgur, etc).</span>
+                  <span className="text-[10px] text-white/30">Insira um link direto de imagem ou clique em "Upload Foto" para enviar diretamente do seu computador.</span>
                 </div>
 
                 <div className="flex flex-col gap-1.5 text-left">
@@ -575,18 +657,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">
                       {backgroundType === "color" ? "Código Hexadecimal da Cor" : "URL Direta da Mídia"}
                     </label>
-                    <input
-                      type="text"
-                      value={backgroundUrl}
-                      onChange={(e) => setBackgroundUrl(e.target.value)}
-                      placeholder={backgroundType === "color" ? "Ex: #0a0a0c" : "https://exemplo.com/fundo.mp4 ou .jpg"}
-                      className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
-                      required={backgroundType !== "color"}
-                    />
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={backgroundUrl}
+                        onChange={(e) => setBackgroundUrl(e.target.value)}
+                        placeholder={backgroundType === "color" ? "Ex: #0a0a0c" : "https://exemplo.com/fundo.mp4 ou .jpg"}
+                        className="flex-1 px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
+                        required={backgroundType !== "color"}
+                      />
+                      {backgroundType !== "color" && (
+                        <FileUploader
+                          onUploadSuccess={setBackgroundUrl}
+                          sessionToken={sessionToken}
+                          accept={backgroundType === "video" ? "video/*" : "image/*"}
+                          label={backgroundType === "video" ? "Upload Vídeo" : "Upload Imagem"}
+                        />
+                      )}
+                    </div>
                     <span className="text-[10px] text-white/30">
                       {backgroundType === "video" 
-                        ? "Certifique-se de usar um link de vídeo MP4 direto (ex: link do Discord terminado em .mp4 ou arquivo público)." 
-                        : "Suporta links de fotos comuns .jpg, .png, etc."}
+                        ? "Certifique-se de usar um link de vídeo MP4 direto ou clique em 'Upload Vídeo'." 
+                        : backgroundType === "color"
+                        ? "Insira um código hexadecimal válido de cor."
+                        : "Suporta links de fotos comuns .jpg, .png, etc., ou clique em 'Upload Imagem'."}
                     </span>
                   </div>
                 )}
@@ -627,15 +721,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5 text-left md:col-span-2">
                   <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL Direta do Áudio (Link MP3)</label>
-                  <input
-                    type="url"
-                    value={songUrl}
-                    onChange={(e) => setSongUrl(e.target.value)}
-                    placeholder="https://exemplo.com/musica.mp3"
-                    className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
-                    required
-                  />
-                  <span className="text-[10px] text-white/30">Cole um link de áudio que termine com .mp3 para compatibilidade universal do navegador.</span>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="url"
+                      value={songUrl}
+                      onChange={(e) => setSongUrl(e.target.value)}
+                      placeholder="https://exemplo.com/musica.mp3"
+                      className="flex-1 px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
+                      required
+                    />
+                    <FileUploader
+                      onUploadSuccess={setSongUrl}
+                      sessionToken={sessionToken}
+                      accept="audio/*"
+                      label="Upload Áudio"
+                    />
+                  </div>
+                  <span className="text-[10px] text-white/30">Insira um link de áudio que termine com .mp3 ou clique em "Upload Áudio" para enviar diretamente do seu computador.</span>
                 </div>
 
                 <div className="flex flex-col gap-1.5 text-left">
@@ -664,14 +766,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 <div className="flex flex-col gap-1.5 text-left md:col-span-2">
                   <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL da Capa do Álbum (Foto da Música)</label>
-                  <input
-                    type="url"
-                    value={albumCoverUrl}
-                    onChange={(e) => setAlbumCoverUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/photo-... ou URL de imagem direta"
-                    className="w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
-                  />
-                  <span className="text-[10px] text-white/30">Suporta links diretos de imagens .jpg, .png, etc. Deixe em branco para exibir o ícone musical padrão.</span>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="url"
+                      value={albumCoverUrl}
+                      onChange={(e) => setAlbumCoverUrl(e.target.value)}
+                      placeholder="https://images.unsplash.com/photo-... ou URL de imagem direta"
+                      className="flex-1 px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30"
+                    />
+                    <FileUploader
+                      onUploadSuccess={setAlbumCoverUrl}
+                      sessionToken={sessionToken}
+                      accept="image/*"
+                      label="Upload Capa"
+                    />
+                  </div>
+                  <span className="text-[10px] text-white/30">Suporta links diretos de imagens .jpg, .png, etc., ou clique em "Upload Capa" para enviar. Deixe em branco para exibir o ícone musical padrão.</span>
                 </div>
 
                 {/* Track Presets */}
