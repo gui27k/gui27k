@@ -1,0 +1,6 @@
+{
+  "name": "FakeCrime Bio",
+  "description": "A customized bio link tree inspired by fakecrime, featuring a clean entry screen, a music player with administrative customization, live views count, and responsive glassmorphic cards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

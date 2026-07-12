@@ -1,0 +1,43 @@
+{
+  "title": "gui27k",
+  "subtitle": "",
+  "description": "jesus is my king.",
+  "avatarUrl": "https://p16-common-sign.tiktokcdn.com/tos-alisg-avt-0068/413afa7fb9cff73e9fd3a0f3b3ddb3ea~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=958f01f1&x-expires=1783994400&x-signature=s%2BeGlD33%2BiDUnt4eajiqu9EaA7A%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my2",
+  "backgroundType": "interactive_rain",
+  "backgroundUrl": "",
+  "viewsCount": 0,
+  "titleGlowColor": "white",
+  "discord": {
+    "username": "@gui27k",
+    "status": "offline",
+    "avatarUrl": "https://i.pinimg.com/1200x/d1/9a/24/d19a24bbd36f4d3aab16eb5b67a439e7.jpg",
+    "profileUrl": "https://discord.com/users/1294062623519670345",
+    "showDiscord": true
+  },
+  "socials": {
+    "twitter": "",
+    "tiktok": "https://www.tiktok.com/@guii27k",
+    "spotify": "https://open.spotify.com/user/31q2enpgxmce3saviqsidv3rijmi?si=ef001e2502254d98",
+    "instagram": "https://www.instagram.com/_gui27k/",
+    "github": "",
+    "youtube": "",
+    "twitch": "",
+    "customLabel": "",
+    "customUrl": ""
+  },
+  "music": {
+    "songUrl": "https://open.spotify.com/intl-pt/track/5YunBCC8SZDx9BkfYqAGlL?si=340e2d6a96fc4340",
+    "songTitle": "Summer nights",
+    "artistName": "AdTurnUp",
+    "albumCoverUrl": "https://i.audiomack.com/dayyan-united/e11f70809b.webp?width=416",
+    "showMusicPlayer": true
+  },
+  "entryScreen": {
+    "emoji": "🔑",
+    "text": "clique para entrar...",
+    "backgroundType": "interactive_rain",
+    "backgroundUrl": ""
+  },
+  "footerText": "made by gui27k",
+  "adminPassword": "admin"
+}

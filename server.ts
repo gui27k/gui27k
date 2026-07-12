@@ -1,0 +1,172 @@
+import express from "express";
+import path from "path";
+import fs from "fs";
+import { createServer as createViteServer } from "vite";
+
+const app = express();
+const PORT = 3000;
+const CONFIG_FILE = path.join(process.cwd(), "bio_config.json");
+
+// Middleware
+app.use(express.json());
+
+// Default configuration mimicking fakecrime bio aesthetic
+const DEFAULT_CONFIG = {
+  title: "",
+  subtitle: "",
+  description: "",
+  avatarUrl: "",
+  backgroundType: "interactive_rain",
+  backgroundUrl: "",
+  viewsCount: 0,
+  titleGlowColor: "white",
+  discord: {
+    username: "",
+    status: "offline",
+    avatarUrl: "",
+    profileUrl: "",
+    showDiscord: false,
+  },
+  socials: {
+    twitter: "",
+    tiktok: "",
+    spotify: "",
+    instagram: "",
+    github: "",
+    youtube: "",
+    twitch: "",
+    customLabel: "",
+    customUrl: "",
+  },
+  music: {
+    songUrl: "",
+    songTitle: "",
+    artistName: "",
+    albumCoverUrl: "",
+    showMusicPlayer: false,
+  },
+  entryScreen: {
+    emoji: "🔑",
+    text: "",
+    backgroundType: "interactive_rain",
+    backgroundUrl: "",
+  },
+  footerText: "",
+  adminPassword: "admin", // Default password, can be changed in panel
+};
+
+// Helper to get or create config
+function getConfig() {
+  try {
+    if (!fs.existsSync(CONFIG_FILE)) {
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(DEFAULT_CONFIG, null, 2), "utf-8");
+      return DEFAULT_CONFIG;
+    }
+    const content = fs.readFileSync(CONFIG_FILE, "utf-8");
+    const parsed = JSON.parse(content);
+    
+    let changed = false;
+    // Migrate old entry screen emoji if it is still the default angel emoji
+    if (parsed.entryScreen && parsed.entryScreen.emoji === "👼🏻") {
+      parsed.entryScreen.emoji = "🔑";
+      changed = true;
+    }
+
+    if (changed) {
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(parsed, null, 2), "utf-8");
+    }
+    
+    return parsed;
+  } catch (error) {
+    console.error("Error reading config, using default:", error);
+    return DEFAULT_CONFIG;
+  }
+}
+
+// Helper to save config
+function saveConfig(config: any) {
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), "utf-8");
+    return true;
+  } catch (error) {
+    console.error("Error writing config:", error);
+    return false;
+  }
+}
+
+// API Routes
+
+// Get public configuration and increment view count
+app.get("/api/config", (req, res) => {
+  const config = getConfig();
+  
+  // Increment view counter
+  config.viewsCount = (config.viewsCount || 0) + 1;
+  saveConfig(config);
+
+  // Return config without the password
+  const { adminPassword, ...publicConfig } = config;
+  res.json(publicConfig);
+});
+
+// Admin login
+app.post("/api/login", (req, res) => {
+  const { password } = req.body;
+  const config = getConfig();
+  
+  if (password === config.adminPassword) {
+    res.json({ success: true, token: "fakecrime-session-token-" + config.adminPassword });
+  } else {
+    res.status(401).json({ success: false, message: "Senha incorreta!" });
+  }
+});
+
+// Update configuration (requires password verification)
+app.post("/api/config", (req, res) => {
+  const { token, config: newConfig, newPassword } = req.body;
+  const config = getConfig();
+
+  // Validate session token
+  const expectedToken = "fakecrime-session-token-" + config.adminPassword;
+  if (token !== expectedToken) {
+    return res.status(403).json({ success: false, message: "Sessão expirada ou não autorizada!" });
+  }
+
+  // Preserve existing password or update with newPassword
+  const updatedConfig = {
+    ...config,
+    ...newConfig,
+    adminPassword: newPassword && newPassword.trim() !== "" ? newPassword : config.adminPassword,
+    // Keep viewsCount unless explicitly updated
+    viewsCount: typeof newConfig.viewsCount === 'number' ? newConfig.viewsCount : config.viewsCount,
+  };
+
+  if (saveConfig(updatedConfig)) {
+    res.json({ success: true, message: "Configuração atualizada com sucesso!" });
+  } else {
+    res.status(500).json({ success: false, message: "Erro ao salvar no servidor." });
+  }
+});
+
+// Main server logic supporting dev Vite mode or production mode
+async function startServer() {
+  if (process.env.NODE_ENV !== "production") {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  }
+
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+startServer();
