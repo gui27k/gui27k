@@ -181,7 +181,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ config, shouldPlay }) 
         {error ? (
           <span className="text-[10px] text-red-400 font-sans truncate">{error}</span>
         ) : (
-          <span className="text-[10px] text-white/30 font-sans">Fakecrime Player</span>
+          <span className="text-[10px] text-white/30 font-sans"></span>
         )}
         
         {/* Volume adjust */}

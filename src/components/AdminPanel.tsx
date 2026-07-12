@@ -720,7 +720,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5 text-left md:col-span-2">
-                  <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL Direta do Áudio (Link MP3)</label>
+                  <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL Direta do Áudio (Link MP3/MP4)</label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
@@ -733,11 +733,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <FileUploader
                       onUploadSuccess={setSongUrl}
                       sessionToken={sessionToken}
-                      accept="audio/*"
+                      accept="audio/*,video/mp4,video/*"
                       label="Upload Áudio"
                     />
                   </div>
-                  <span className="text-[10px] text-white/30">Insira um link de áudio que termine com .mp3 ou clique em "Upload Áudio" para enviar diretamente do seu computador.</span>
+                  <span className="text-[10px] text-white/30">Insira um link de áudio que termine com .mp3 ou .mp4, ou clique em "Upload Áudio" para enviar diretamente do seu computador.</span>
                 </div>
 
                 <div className="flex flex-col gap-1.5 text-left">
@@ -860,7 +860,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL da Foto de Avatar (Discord)</label>
                   <div className="flex gap-2">
                     <input
-                      type="url"
+                      type="text"
                       value={discordAvatarUrl}
                       onChange={(e) => setDiscordAvatarUrl(e.target.value)}
                       placeholder="https://exemplo.com/foto-discord.png"
@@ -876,7 +876,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="flex flex-col gap-1.5 text-left md:col-span-2">
                   <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">Link do Perfil ou Convite de Amizade</label>
                   <input
-                    type="url"
+                    type="text"
                     value={discordProfileUrl}
                     onChange={(e) => setDiscordProfileUrl(e.target.value)}
                     placeholder="https://discord.gg/convite ou https://discord.com/users/id"
@@ -991,7 +991,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="flex flex-col gap-1.5 text-left">
                       <label className="text-[10px] uppercase tracking-wider text-white/40 font-mono">URL de Destino</label>
                       <input
-                        type="url"
+                        type="text"
                         value={customUrl}
                         onChange={(e) => setCustomUrl(e.target.value)}
                         placeholder="https://seu-link-customizado.com"
